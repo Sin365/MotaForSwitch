@@ -6,7 +6,7 @@ public class DebugOpen : MonoBehaviour {
 
 	void Awake()
 	{
-		//debugger.gameObject.SetActive(false);
+		debugger.gameObject.SetActive(false);
 	}
 	
 	// Update is called once per frame

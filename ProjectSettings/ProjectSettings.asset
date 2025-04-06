@@ -392,7 +392,7 @@ PlayerSettings:
   microphoneUsageDescription: 
   bluetoothUsageDescription: 
   macOSTargetOSVersion: 10.13.0
-  switchNMETAOverride: 
+  switchNMETAOverride: Application.aarch64.lp64.nmeta
   switchNetLibKey: 
   switchSocketMemoryPoolSize: 6144
   switchSocketAllocatorPoolSize: 128

@@ -11,7 +11,7 @@ using UnityEngine;
 
 namespace AxibugEmuOnline.Editors
 {
-    public class AxibugNSPTools : Editor
+	public class AxibugNSPTools : Editor
     {
         static string WorkRoot = Path.GetFullPath(Path.Combine(Application.dataPath, "AxiProjectTools/AxiNSPack"));
         static string switch_keys = Path.GetFullPath(Path.Combine(Application.dataPath, "AxiProjectTools/AxiNSPack/switch_keys"));
@@ -120,9 +120,9 @@ namespace AxibugEmuOnline.Editors
 
         static void RepackNSP(string nspFile)
         {
-            #region 初始化工具路径
-            // 获取环境变量（需要添加环境变量检查）
-            string sdkRoot = Environment.GetEnvironmentVariable("NINTENDO_SDK_ROOT");
+			#region 初始化工具路径
+			// 获取环境变量（需要添加环境变量检查）
+			string sdkRoot = Environment.GetEnvironmentVariable("NINTENDO_SDK_ROOT");
             tools["authoringTool"] = Path.Combine(sdkRoot, "Tools/CommandLineTools/AuthoringTool/AuthoringTool.exe");
             tools["hacPack"] = Path.Combine(hacpack_root, "hacpack");
             #endregion
@@ -153,7 +153,7 @@ namespace AxibugEmuOnline.Editors
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"解包NSP文件", 0.2f);
             #region 解包NSP文件
             string extractPath = Path.Combine(nspParentDir, "repacker_extract");
-            ExecuteCommand($"{tools["authoringTool"]} extract -o \"{extractPath}\" \"{nspFilePath}\"");
+            ExecuteCommand($"{tools["authoringTool"]} extract -o \"{extractPath}\" \"{nspFilePath}\"", nspParentDir);
 
             string controlPath = null;
             string programPath = null;
@@ -168,13 +168,13 @@ namespace AxibugEmuOnline.Editors
             #region 重建NCA/NSP
             string tmpPath = Path.Combine(Path.GetTempPath(), "NCA");
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"重建NCA", 0.6f);
-            string programNCA = BuildProgramNCA(tmpPath, titleID, programPath);
+            string programNCA = BuildProgramNCA(tmpPath, titleID, programPath, nspParentDir);
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"重建NCA", 0.7f);
-            string controlNCA = BuildControlNCA(tmpPath, titleID, controlPath);
+            string controlNCA = BuildControlNCA(tmpPath, titleID, controlPath, nspParentDir);
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"重建NCA", 0.8f);
-            BuildMetaNCA(tmpPath, titleID, programNCA, controlNCA);
+            BuildMetaNCA(tmpPath, titleID, programNCA, controlNCA, nspParentDir);
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"重建NSP", 0.9f);
-            string outputNSP = BuildFinalNSP(nspFilePath, nspParentDir, tmpPath, titleID);
+            string outputNSP = BuildFinalNSP(nspFilePath, nspParentDir, tmpPath, titleID, nspParentDir);
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"重建NSP", 1f);
             Debug.Log($"[AxibugNSPTools]Repacking completed: {outputNSP}");
             EditorUtility.ClearProgressBar();
@@ -215,7 +215,7 @@ namespace AxibugEmuOnline.Editors
             }
         }
 
-        static string ExecuteCommand(string command)
+        static string ExecuteCommand(string command,string workdir)
         {
             var process = new System.Diagnostics.Process()
             {
@@ -228,8 +228,9 @@ namespace AxibugEmuOnline.Editors
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     StandardOutputEncoding = Encoding.UTF8,  // 明确指定编码
-                    StandardErrorEncoding = Encoding.UTF8
-                }
+                    StandardErrorEncoding = Encoding.UTF8,
+                    WorkingDirectory = workdir
+				}
             };
 
             var outputBuilder = new StringBuilder();
@@ -275,44 +276,44 @@ namespace AxibugEmuOnline.Editors
         #endregion
 
         #region NCA构建逻辑
-        static string BuildProgramNCA(string tmpPath, string titleID, string programDir)
-        {
+        static string BuildProgramNCA(string tmpPath, string titleID, string programDir, string workdir)
+		{
             string args = $"-k \"{prodKeysPath}\" -o \"{tmpPath}\" --titleid {titleID} " +
                           $"--type nca --ncatype program --exefsdir \"{programDir}/fs0\" " +
                           $"--romfsdir \"{programDir}/fs1\" --logodir \"{programDir}/fs2\"";
 
-            string output = ExecuteCommand($"{tools["hacPack"]} {args}");
+            string output = ExecuteCommand($"{tools["hacPack"]} {args}", workdir);
             return ParseNCAOutput(output, "Program");
         }
 
-        static string BuildControlNCA(string tmpPath, string titleID, string controlDir)
-        {
+        static string BuildControlNCA(string tmpPath, string titleID, string controlDir, string workdir)
+		{
             string args = $"-k \"{prodKeysPath}\" -o \"{tmpPath}\" --titleid {titleID} " +
                           $"--type nca --ncatype control --romfsdir \"{controlDir}/fs0\"";
 
-            string output = ExecuteCommand($"{tools["hacPack"]} {args}");
+            string output = ExecuteCommand($"{tools["hacPack"]} {args}", workdir);
 
             return ParseNCAOutput(output, "Control");
         }
 
-        static void BuildMetaNCA(string tmpPath, string titleID, string programNCA, string controlNCA)
-        {
+        static void BuildMetaNCA(string tmpPath, string titleID, string programNCA, string controlNCA, string workdir)
+		{
             string args = $"-k \"{prodKeysPath}\" -o \"{tmpPath}\" --titleid {titleID} " +
                           $"--type nca --ncatype meta --titletype application " +
                           $"--programnca \"{programNCA}\" --controlnca \"{controlNCA}\"";
 
-            ExecuteCommand($"{tools["hacPack"]} {args}");
+            ExecuteCommand($"{tools["hacPack"]} {args}", workdir);
         }
 
-        static string BuildFinalNSP(string origPath, string parentDir, string tmpPath, string titleID)
-        {
+        static string BuildFinalNSP(string origPath, string parentDir, string tmpPath, string titleID, string workdir)
+		{
             string outputPath = origPath.Replace(".nsp", "_repacked.nsp");
             if (File.Exists(outputPath)) File.Delete(outputPath);
 
             string args = $"-k \"{prodKeysPath}\" -o \"{parentDir}\" --titleid {titleID} " +
                           $"--type nsp --ncadir \"{tmpPath}\"";
 
-            ExecuteCommand($"{tools["hacPack"]} {args}");
+            ExecuteCommand($"{tools["hacPack"]} {args}", workdir);
             File.Move(Path.Combine(parentDir, $"{titleID}.nsp"), outputPath);
             return outputPath;
         }
