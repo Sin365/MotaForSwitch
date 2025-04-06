@@ -147,7 +147,7 @@ namespace AxibugEmuOnline.Editors
             #region 清理临时目录
             CleanDirectory(Path.Combine(nspParentDir, "repacker_extract"));
             CleanDirectory(Path.Combine(Path.GetTempPath(), "NCA"));
-            //CleanDirectory(Path.Combine(WorkRoot, "hacpack_backup"));
+            CleanDirectory(Path.Combine(WorkRoot, "hacpack_backup"));
             #endregion
 
             EditorUtility.DisplayProgressBar("AxibugNSPTools", $"解包NSP文件", 0.2f);
