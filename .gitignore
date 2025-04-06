@@ -1,0 +1,16 @@
+/*.vsconfig
+/Library/
+/Temp/
+/UserSettings/
+/.vs/
+/*.csproj
+/*.sln
+/obj/
+/logs/
+/Output/
+/ProjectSettings/Packages/
+**/switch_keys/*.keys
+**/switch_keys/*.keys.meta
+**/NintendoSDKPlugin/
+/Build_switch/
+/hacpack_backup/
