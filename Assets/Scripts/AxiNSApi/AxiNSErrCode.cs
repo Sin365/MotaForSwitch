@@ -1,13 +1,13 @@
 public static class AxiNSErrCode
 {
-
+#if UNITY_SWITCH
 	public static string GetErrorInfo(this nn.Result result)
 	{
 		if (result.IsSuccess())
 			return "NoErr";
 		return GetErrorDetails(result.GetModule(), result.GetDescription());
 	}
-
+#endif
 	/// <summary>
 	/// 根据模块 ID 和描述 ID 返回任天堂 Switch 错误码的含义、可能原因及解决办法。
 	/// </summary>

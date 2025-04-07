@@ -1,4 +1,6 @@
+#if UNITY_SWITCH
 using nn.account;
+#endif
 
 public class AxiNS
 {
@@ -28,8 +30,10 @@ public class AxiNS
 	/// </summary>
 	public void Init()
 	{
+#if UNITY_SWITCH
 		if (!user.GetUserID(out Uid uid))
 			return;
 		mount.MountSave(uid);
+#endif
 	}
 }
